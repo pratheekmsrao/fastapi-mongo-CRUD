@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .schemas.user  import UserInfo
+from schemas.user  import UserInfo
 
 app=FastAPI()
 
