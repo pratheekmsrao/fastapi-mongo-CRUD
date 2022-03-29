@@ -20,10 +20,12 @@ password = urllib.parse.quote_plus(os.getenv("MONGO_PASSWORD"))
 
 
 
-def get_db():
+
+
+def get_db(db_name:str):
     client = pymongo.MongoClient(f"mongodb+srv://{username}:{password}@cluster0.ahcv1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
     db = client.test
-    db=client.get_database("UsersDB")
+    db=client.get_database(db_name)
     # try:
     #     yield db
     # finally:

@@ -19,6 +19,15 @@ class UserAddress(BaseModel):
     country:str
     zip_code:str
 
+class UpdateAddress(BaseModel):
+    username:Optional[str]=None
+    address_line1:Optional[str]=None
+    address_line2:Optional[str]=None
+    city:Optional[str]=None
+    state:Optional[str]=None
+    country:Optional[str]=None
+    zip_code:Optional[str]=None
+
 class UserInfoIn(BaseModel):
     first_name:str
     middle_name:Optional[str]=None

@@ -1,7 +1,7 @@
 from fastapi import Body, Depends, FastAPI
 from db import get_db
 
-from schemas.user import UserAddress, UserInfoIn, UserLogin
+from schemas.user import UpdateAddress, UserAddress, UserInfoIn, UserLogin
 
 import dotenv
 import os
@@ -45,7 +45,8 @@ async def root():
 
 @app.post('/register')
 async def register(user:UserLogin=Body(...)):
-    db=get_db()
+    # TODO add incrementing userid
+    db=get_db("UsersDB")
     col=db.get_collection("Users")
     id=col.insert_one(user.dict())
     return {"message":"success","inser_id":str(id.inserted_id)}
@@ -54,19 +55,51 @@ async def register(user:UserLogin=Body(...)):
 
 
 @app.post('/login')
-async def login(data:UserLogin):
-    userlogin.update(data)
-    print('before userlogin',userlogin)
-    print('userlogin',userlogin,userlogin.get(data.email))
-    return {"data":userlogin}
+async def login(data:UserLogin=Body(...)):
+    db=get_db("UsersDB")
+    col=db.get_collection("Users")
+    user=col.find_one({'email':data.email,'password':data.password})
+    if user:
+        return {"message":f'User {data.email} found',"status":200}
+    else:
+        return {"message":f'user{data.email} not found','status':404}
 
-@app.post('/user')
-async def create_user(data:UserInfoIn):
-    user.update(data)
-    return {"data":user}
+# @app.post('/user')
+# async def create_user(data:UserInfoIn):
+#     user.update(data)
+#     return {"data":user}
 
 @app.post('/address')
-async def address(address:UserAddress):
-    useraddress.update(address)
-    return {"data":useraddress}
+async def create_address(address:UserAddress=Body(...)):
+    # TODO integrate user with UserAddress
+    # by using UserInfoIn
+    db=get_db("UsersDB")
+    col=db.get_collection("Address")
+    id=col.insert_one(address.dict())
+    return {"message":"success","inser_id":str(id.inserted_id)}
+
+@app.get('/address')
+async def get_address(user:str):
+    # TODO integrate user with UserAddress
+    # by using UserInfoIn
+    # TODO make return address using pydantic model
+    db=get_db("UsersDB")
+    col=db.get_collection("Address")
+    address=col.find_one({'username':user})
+    if address:
+        return {"message":f'address for  {user} found',"status":200}
+    else:
+        return {"message":f'address for {user} not found','status':404}
     
+@app.post('/update_address')
+async def update_address(address:UserAddress=Body(...)):
+    # TODO integrate user with UserAddress
+    # by using UserInfoIn
+    db=get_db("UsersDB")
+    col=db.get_collection("Address")
+    u_address={k:v for k,v in address.dict().items() if v is not None}
+    res=col.update_one({'username':address.username},{'$set':address.dict()})
+    if res.modified_count==1:
+        return {"message":f'address for  {address.username} updated',"status":200}
+    else:
+        return {"message":f'address for {address.username} not found','status':404}
